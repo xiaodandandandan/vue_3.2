@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-form ref="formRef" :model="form" class="login-form" :rules="rules">
       <div class="title-container">
-        <h3 class="title">Login</h3>
+        <h3 class="title">{{ $t('login.title')}}</h3>
       </div>
       <el-form-item prop="username">
         <!-- <el-icon :size="20" class="svg-container"><View /></el-icon> -->
@@ -19,7 +19,7 @@
         ></svg-icon>
       </el-form-item>
       <el-button type="primary" class="login-button" @click="handleLogin"
-        >登录</el-button
+        >{{$t('login.btnTitle')}}</el-button
       >
     </el-form>
   </div>

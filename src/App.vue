@@ -3,4 +3,7 @@
 </template>
 
 <style lang="scss">
+.el-message-box__status{
+  position: absolute !important;
+}
 </style>

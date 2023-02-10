@@ -1,10 +1,15 @@
 <template>
   <el-container class="app-wrapper">
-    <el-aside width="200px" class="sidebar-container">
-      <Menu></Menu>
+    <el-aside :width="asideWidth" class="sidebar-container">
+      <Menu />
     </el-aside>
-    <el-container class="container">
-      <el-header>Header</el-header>
+    <el-container
+      class="container"
+      :class="{ hidderContainer: !$store.getters.siderType }"
+    >
+      <el-header>
+       <Headers />
+      </el-header>
       <el-main>
         <router-view />
       </el-main>
@@ -14,6 +19,15 @@
 
 <script setup>
 import Menu from './Menu'
+import Headers from './headers'
+import { useStore } from 'vuex'
+import { computed } from 'vue'
+const store = useStore()
+const asideWidth = computed(() => {
+  return store.getters.siderType
+    ? '210px'
+    : '67px'
+})
 </script>
 
 <style scoped lang="scss">

@@ -3,10 +3,11 @@
     active-text-color="#ffd04b"
     background-color="variables.menuBg"
     class="el-menu-vertical-demo"
-    :default-active="$router.path"
+    :default-active="$route.path"
     text-color="#fff"
     router
     unique-opened
+    :collapse="!$store.getters.siderType"
   >
     <el-sub-menu
       :index="item.id"
@@ -28,7 +29,7 @@
         <el-icon>
           <component :is="icon"></component>
         </el-icon>
-        <span>{{ it.authName }}</span>
+        <span>{{ $t(`menus.${it.path}`) }}</span>
       </el-menu-item>
     </el-sub-menu>
   </el-menu>

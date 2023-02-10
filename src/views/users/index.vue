@@ -1,7 +1,173 @@
 <template>
-  <div>users</div>
+  <el-card>
+    <el-row :gutter="20" class="header">
+      <el-col :span="7">
+        <el-input
+          :placeholder="$t('table.placeholder')"
+          clearable
+          v-model="queryform.query"
+          @clear="initTableData"
+        ></el-input>
+      </el-col>
+      <el-button type="primary" :icon="Search" @click="initTableData">{{
+        $t('table.search')
+      }}</el-button>
+      <el-button type="primary" @click="handleDialog()">{{
+        $t('table.adduser')
+      }}</el-button>
+    </el-row>
+    <el-table :data="tableData" stripe style="width: 100%">
+      <el-table-column
+        :prop="item.prop"
+        :label="$t(`table.${item.label}`)"
+        :width="item.width"
+        v-for="item in options"
+        :key="item.id"
+      >
+        <template v-slot="{ row }" v-if="item.prop === 'mg_state'">
+          <el-switch v-model="row.mg_state" @change="changeState(row)" />
+        </template>
+        <template v-slot="{ row }" v-else-if="item.prop === 'create_time'">
+          {{ filter(row.create_time) }}
+        </template>
+        <template v-slot="{ row }" v-else-if="item.prop === 'action'">
+          <el-button
+            type="primary"
+            size="small"
+            :icon="Edit"
+            @click="handleDialog(row)"
+          ></el-button>
+          <el-button type="danger" size="small" :icon="Delete" @click="deleteUserInfo(row.id)"></el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      v-model:current-page="queryform.pagenum"
+      v-model:page-size="queryform.pagesize"
+      :page-sizes="[2, 5, 10]"
+      :small="small"
+      :disabled="disabled"
+      :background="background"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+    <Dialog
+      v-model="dialogFormVisible"
+      :dialogTitle="dialogTitle"
+      @init="initTableData"
+      :dialogFormData="dialogFormData"
+    />
+  </el-card>
 </template>
 
-<script></script>
+<script setup>
+import { getUserData, changeUserState, deleteUser } from '@/api/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref } from 'vue'
+import { options } from './options'
+import { Edit, Search, Delete } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+import Dialog from './components/dialog.vue'
+const i18n = useI18n()
+const dayjs = require('dayjs')
+const dialogFormVisible = ref(false)
+const dialogTitle = ref('')
+const dialogFormData = ref({})
 
-<style lang="scss" scoped></style>
+const handleDialog = (row) => {
+  if (isNull(row)) {
+    dialogTitle.value = i18n.t('dialog.adduser')
+  } else {
+    dialogTitle.value = i18n.t('dialog.edituser')
+    dialogFormData.value = JSON.parse(JSON.stringify(row))
+  }
+  dialogFormVisible.value = true
+}
+const filter = (val, format = 'YYYY-MM-DD') => {
+  if (!isNull(val)) {
+    val = parseInt(val) * 1000
+    return dayjs(val).format(format)
+  } else {
+    return '--'
+  }
+}
+const isNull = (date) => {
+  if (!date) return true
+  if (JSON.stringify(date) === '{}' || JSON.stringify(date) === '[]') {
+    return true
+  }
+}
+const queryform = ref({
+  query: '',
+  pagenum: 1,
+  pagesize: 10
+})
+const tableData = ref([])
+const total = ref(0)
+const initTableData = async () => {
+  const res = await getUserData(queryform.value)
+  console.log(res.users)
+  total.value = res.total
+  tableData.value = res.users
+}
+initTableData()
+
+const handleSizeChange = (pageSize) => {
+  queryform.value.pagenum = 1
+  queryform.value.pagesize = pageSize
+  initTableData()
+}
+
+const handleCurrentChange = (pagenum) => {
+  queryform.value.pagenum = pagenum
+  initTableData()
+}
+
+const changeState = async (info) => {
+  await changeUserState(info.id, info.mg_state)
+  ElMessage({
+    message: i18n.t('message.updeteSuccess'),
+    type: 'success'
+  })
+}
+
+const deleteUserInfo = (id) => {
+  ElMessageBox.confirm(
+    i18n.t('dialog.deleteTitle'),
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      cancelButtonText: 'Cancel',
+      type: 'warning'
+    }
+  )
+    .then(async () => {
+      await deleteUser(id)
+      initTableData()
+      ElMessage({
+        type: 'success',
+        message: 'Delete completed'
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled'
+      })
+    })
+}
+
+</script>
+
+<style lang="scss" scoped>
+.header {
+  padding-bottom: 16px;
+  box-sizing: border-box;
+}
+::v-deep .el-pagination {
+  float: right;
+  padding: 16px 5px;
+}
+</style>
