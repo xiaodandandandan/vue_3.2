@@ -37,7 +37,18 @@
             :icon="Edit"
             @click="handleDialog(row)"
           ></el-button>
-          <el-button type="danger" size="small" :icon="Delete" @click="deleteUserInfo(row.id)"></el-button>
+          <el-button
+            type="warning"
+            size="small"
+            :icon="Setting"
+            @click="handleRoleDialog(row)"
+          ></el-button>
+          <el-button
+            type="danger"
+            size="small"
+            :icon="Delete"
+            @click="deleteUserInfo(row.id)"
+          ></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -59,15 +70,46 @@
       @init="initTableData"
       :dialogFormData="dialogFormData"
     />
+    <!-- 分配角色对话框 -->
+    <el-dialog
+      v-model="setRoleDialogVisible"
+      title="分配角色"
+      width="40%"
+      placement="right-end"
+      @close="handleRoleDialogClose"
+    >
+      <div>
+        <p class="item">当前的用户：{{ userInfo.username }}</p>
+        <p class="item">当前的角色：{{ userInfo.role_name }}</p>
+        <p class="item">
+          分配新角色：<el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in rolesList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="setRoleDialogVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="setRoleInfo"> Confirm </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </el-card>
 </template>
 
 <script setup>
-import { getUserData, changeUserState, deleteUser } from '@/api/user'
+import { getUserData, changeUserState, deleteUser, setUserRole } from '@/api/user'
+import { GetRoleList } from '@/api/role'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { options } from './options'
-import { Edit, Search, Delete } from '@element-plus/icons-vue'
+import { Edit, Search, Delete, Setting } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import Dialog from './components/dialog.vue'
 const i18n = useI18n()
@@ -75,7 +117,10 @@ const dayjs = require('dayjs')
 const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const dialogFormData = ref({})
-
+const setRoleDialogVisible = ref(false)
+const rolesList = ref([])
+const userInfo = ref({})
+const selectedRoleId = ref('')
 const handleDialog = (row) => {
   if (isNull(row)) {
     dialogTitle.value = i18n.t('dialog.adduser')
@@ -108,12 +153,17 @@ const tableData = ref([])
 const total = ref(0)
 const initTableData = async () => {
   const res = await getUserData(queryform.value)
-  console.log(res.users)
   total.value = res.total
   tableData.value = res.users
 }
 initTableData()
-
+const handleRoleDialog = async (row) => {
+  setRoleDialogVisible.value = true
+  const res = await GetRoleList()
+  // console.log(res)
+  rolesList.value = res
+  userInfo.value = JSON.parse(JSON.stringify(row))
+}
 const handleSizeChange = (pageSize) => {
   queryform.value.pagenum = 1
   queryform.value.pagesize = pageSize
@@ -134,15 +184,11 @@ const changeState = async (info) => {
 }
 
 const deleteUserInfo = (id) => {
-  ElMessageBox.confirm(
-    i18n.t('dialog.deleteTitle'),
-    'Warning',
-    {
-      confirmButtonText: 'OK',
-      cancelButtonText: 'Cancel',
-      type: 'warning'
-    }
-  )
+  ElMessageBox.confirm(i18n.t('dialog.deleteTitle'), 'Warning', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning'
+  })
     .then(async () => {
       await deleteUser(id)
       initTableData()
@@ -159,6 +205,18 @@ const deleteUserInfo = (id) => {
     })
 }
 
+const handleRoleDialogClose = () => {
+  setRoleDialogVisible.value = false
+}
+const setRoleInfo = async () => {
+  if (!selectedRoleId.value) {
+    ElMessage.error('请选择角色')
+  } else {
+    await setUserRole(userInfo.value.id, selectedRoleId.value)
+    setRoleDialogVisible.value = false
+    initTableData()
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -169,5 +227,8 @@ const deleteUserInfo = (id) => {
 ::v-deep .el-pagination {
   float: right;
   padding: 16px 5px;
+}
+.item {
+  margin-top: 15px;
 }
 </style>

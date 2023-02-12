@@ -14,6 +14,26 @@ axios 请求拦截和响应拦截
 vuex 的持久化
 
 路由守卫
-判断是否转入login页面
+判断是否转入 login 页面
 
-引入全局scss之后造成无法在scipt中再次引用，新建一个文件，暴露需要用到的变量，作为新文件引入
+引入全局 scss 之后造成无法在 scipt 中再次引用，新建一个文件，暴露需要用到的变量，作为新文件引入
+
+手机号以及邮箱的正则验证
+var checkEmail = (rule, value, callback) => {
+// 检验邮箱的正则表达式
+    const emailRef = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
+    if (emailRef.test(value)) {
+        return callback()
+    }
+    callback(new Error('邮箱格式错误'))
+}
+
+// 检验手机号合法性
+var checkMobile = (rule, value, callback) => {
+    // 检验手机号的正则表达式
+    const mobileRef = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/
+    if (mobileRef.test(value)) {
+        return callback()
+    }
+    callback(new Error('手机号格式错误'))
+}

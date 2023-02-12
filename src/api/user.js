@@ -36,3 +36,14 @@ export const deleteUser = (id) => {
         method: 'delete'
     })
 }
+
+export const setUserRole = (id, rid) => {
+    return request({
+        url: `users/${id}/role`,
+        method: 'put',
+        data: {
+            id,
+            rid
+        }
+    })
+}
