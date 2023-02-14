@@ -50,5 +50,18 @@ export default {
     guideBtn: 'guidebtn',
     hamburgerBtn: 'hamburgerBtn',
     fullScreen: 'fullScreen'
+  },
+  rights: {
+    rightname: 'right name',
+    rightlevel: 'right level',
+    rightpath: 'right path',
+    level1: 'level1',
+    level2: 'level2',
+    level3: 'level3'
+  },
+  roles: {
+    rolename: 'role name',
+    roledesc: 'role desc',
+    action: 'action'
   }
 }

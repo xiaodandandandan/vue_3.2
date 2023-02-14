@@ -84,7 +84,7 @@
         <p class="item">
           分配新角色：<el-select v-model="selectedRoleId" placeholder="请选择">
             <el-option
-              v-for="item in rolesList"
+              v-for="item in store.getters.roleList"
               :key="item.id"
               :label="item.roleName"
               :value="item.id"
@@ -105,22 +105,31 @@
 
 <script setup>
 import { getUserData, changeUserState, deleteUser, setUserRole } from '@/api/user'
-import { GetRoleList } from '@/api/role'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { options } from './options'
 import { Edit, Search, Delete, Setting } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import Dialog from './components/dialog.vue'
+import { useStore } from 'vuex'
+
+const store = useStore()
 const i18n = useI18n()
 const dayjs = require('dayjs')
 const dialogFormVisible = ref(false)
 const dialogTitle = ref('')
 const dialogFormData = ref({})
 const setRoleDialogVisible = ref(false)
-const rolesList = ref([])
 const userInfo = ref({})
 const selectedRoleId = ref('')
+const queryform = ref({
+  query: '',
+  pagenum: 1,
+  pagesize: 10
+})
+const tableData = ref([])
+const total = ref(0)
+
 const handleDialog = (row) => {
   if (isNull(row)) {
     dialogTitle.value = i18n.t('dialog.adduser')
@@ -144,24 +153,15 @@ const isNull = (date) => {
     return true
   }
 }
-const queryform = ref({
-  query: '',
-  pagenum: 1,
-  pagesize: 10
-})
-const tableData = ref([])
-const total = ref(0)
+
 const initTableData = async () => {
   const res = await getUserData(queryform.value)
   total.value = res.total
   tableData.value = res.users
 }
 initTableData()
-const handleRoleDialog = async (row) => {
+const handleRoleDialog = (row) => {
   setRoleDialogVisible.value = true
-  const res = await GetRoleList()
-  // console.log(res)
-  rolesList.value = res
   userInfo.value = JSON.parse(JSON.stringify(row))
 }
 const handleSizeChange = (pageSize) => {

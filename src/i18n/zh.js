@@ -50,5 +50,18 @@ export default {
     guideBtn: '引导按钮',
     hamburgerBtn: '汉堡按钮',
     fullScreen: '全屏按钮'
+  },
+  rights: {
+    rightname: '权限名称',
+    rightlevel: '权限层级',
+    rightpath: '访问路径',
+    level1: '一级',
+    level2: '二级',
+    level3: '三级'
+  },
+  roles: {
+    rolename: '角色名称',
+    roledesc: '角色描述',
+    action: '操作'
   }
 }
