@@ -4,47 +4,43 @@
       >添加角色</el-button
     >
     <el-table :data="tableData" style="width: 100%; margin-bottom: 20px" border>
+      <!--展开项-->
       <el-table-column type="expand">
         <template v-slot="{ row }">
-           <el-card class="card">
-            <el-row>
-              <el-col :span="5">
-                <span class="title">一级权限</span>
-              </el-col>
-              <el-col :span="19">
-                <el-row class="bdtop">
-                  <el-col :span="6">
-                    <span class="title">二级权限</span>
-                  </el-col>
-                  <el-col :span="18">
-                    <span class="title">三级权限</span>
-                  </el-col>
-                </el-row>
-              </el-col>
-            </el-row>
-           </el-card>
-            <el-card class="card">
+          <el-card class="card">
             <el-row
-              v-for="item1 in row.children"
+              v-for="(item1, i1) in row.children"
               :key="item1.id"
-              class="row-item"
-              align="middle"
+              :class="['bdbottom', i1 === 0 ? 'bdtop' : '']"
               :gutter="20"
             >
-                <el-col :span="5" v-if="item1.children.length !== 0">
-                  <el-tag closable @close="deleteRightById(row, item1.id)">{{ item1.authName }}</el-tag>
-                </el-col>
+              <el-col :span="5" v-if="item1.children.length !== 0">
+                <el-tag
+                  closable
+                  @close="deleteRightById(row, item1.id)"
+                  class="mx-1"
+                  size="large"
+                  >{{ item1.authName }}</el-tag
+                >
+                <el-icon><CaretRight /></el-icon>
+              </el-col>
               <!-- 渲染二级和三级权限 -->
               <el-col :span="19">
                 <el-row
-                  v-for="item2 in item1.children"
+                  v-for="(item2, i2) in item1.children"
                   :key="item2.id"
-                  class="bdtop"
+                  :class="['bdbottom', i2 === 0 ? 'bdtop' : '']"
                 >
                   <el-col :span="6" v-if="item2.children.length !== 0">
-                    <el-tag type="success" closable @close="deleteRightById(row, item2.id)" >{{ item2.authName }}
+                    <el-tag
+                      type="success"
+                      closable
+                      @close="deleteRightById(row, item2.id)"
+                      class="mx-1"
+                      size="large"
+                      >{{ item2.authName }}
                     </el-tag>
-                    <i class="el-icon-caret-right"></i>
+                    <el-icon><CaretRight /></el-icon>
                   </el-col>
                   <el-col :span="18">
                     <el-tag
@@ -53,7 +49,8 @@
                       :key="item3.id"
                       closable
                       @close="deleteRightById(row, item3.id)"
-                      class="tag-item"
+                      class="mx-1"
+                      size="large"
                       >{{ item3.authName }}
                     </el-tag>
                   </el-col>
@@ -72,11 +69,9 @@
             :icon="Edit"
             @click="handleRoleDialog(row)"
           ></el-button>
-          <el-button
-            type="warning"
-            :icon="Setting"
-            @click="setRights(row.id)"
-          ></el-button>
+          <el-button type="warning" :icon="Setting" @click="setRights(row)"
+            >分配权限</el-button
+          >
           <el-button
             type="danger"
             :icon="Delete"
@@ -85,6 +80,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <!--添加以及编辑公用的dialog组件-->
     <Dialog
       v-model="dialogVisible"
       :dialogTitle="dialogTitle"
@@ -111,7 +107,7 @@
       ></el-tree>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="setRightDialogVisible = false">取 消</el-button>
+          <el-button @click="setRightDialogClosed">取 消</el-button>
           <el-button type="primary" @click="allotRights">确 定</el-button>
         </span>
       </template>
@@ -121,7 +117,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { GetRoleList, SearchRole, DeleteRole, SetRights, DeleteRoleByRightId } from '@/api/role'
+import {
+  GetRoleList,
+  SearchRole,
+  DeleteRole,
+  SetRights,
+  DeleteRoleByRightId
+} from '@/api/role'
 import { getRightsTree } from '@/api/rights'
 import { Edit, Delete, Setting } from '@element-plus/icons-vue'
 import Dialog from './components/dialog.vue'
@@ -162,13 +164,21 @@ const handleRoleDialog = async (row) => {
   dialogVisible.value = true
 }
 
-const setRights = async (id) => {
-  setRightDialogVisible.value = true
+const setRights = async (row) => {
+  getLeafKeys(row, defKeys)
   const res = await getRightsTree()
   rightsList.value = res
-  roleId.value = id
+  roleId.value = row.id
+  setRightDialogVisible.value = true
 }
-
+const getLeafKeys = (data, arr) => {
+  if (!data.children) {
+    return arr.value.push(data.id)
+  }
+  data.children.forEach((element) => {
+    getLeafKeys(element, arr)
+  })
+}
 const deleteRole = (id) => {
   ElMessageBox.confirm('确定要删除该角色吗？', 'Warning', {
     confirmButtonText: 'OK',
@@ -193,6 +203,7 @@ const deleteRole = (id) => {
 
 const setRightDialogClosed = () => {
   setRightDialogVisible.value = false
+  defKeys.value = []
 }
 const allotRights = async () => {
   const arr = [
@@ -210,7 +221,6 @@ const allotRights = async () => {
   setRightDialogClosed()
   initData()
 }
-
 const deleteRightById = (role, rightId) => {
   ElMessageBox.confirm('确定要删除该权限吗？', 'Warning', {
     confirmButtonText: 'OK',
@@ -219,11 +229,11 @@ const deleteRightById = (role, rightId) => {
   })
     .then(async () => {
       const res = await DeleteRoleByRightId(role.id, rightId)
+      role.children = res
       ElMessage({
         type: 'success',
         message: 'Delete completed'
       })
-      role.children = res
     })
     .catch(() => {
       ElMessage({
@@ -238,12 +248,11 @@ const deleteRightById = (role, rightId) => {
 .add {
   margin-bottom: 15px;
 }
-.row-item {
-  margin: 0 50px;
-  padding: 5px;
+.bdbottom {
+  border-bottom: 1px solid #eee;
 }
 .bdtop {
-  margin: 5px 5px;
+  border-top: 1px solid #eee;
 }
 .tag-item {
   margin: 0 5px;
@@ -254,5 +263,8 @@ const deleteRightById = (role, rightId) => {
 .card {
   margin: 0 auto;
   width: 98%;
+}
+.el-tag {
+  margin: 7px;
 }
 </style>

@@ -36,19 +36,19 @@
             size="small"
             :icon="Edit"
             @click="handleDialog(row)"
-          ></el-button>
+          >编辑用户</el-button>
           <el-button
             type="warning"
             size="small"
             :icon="Setting"
             @click="handleRoleDialog(row)"
-          ></el-button>
+          >分配角色</el-button>
           <el-button
             type="danger"
             size="small"
             :icon="Delete"
             @click="deleteUserInfo(row.id)"
-          ></el-button>
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -64,6 +64,7 @@
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     />
+    <!-- 添加编辑对话框 -->
     <Dialog
       v-model="dialogFormVisible"
       :dialogTitle="dialogTitle"
@@ -84,7 +85,7 @@
         <p class="item">
           分配新角色：<el-select v-model="selectedRoleId" placeholder="请选择">
             <el-option
-              v-for="item in store.getters.roleList"
+              v-for="item in roleList"
               :key="item.id"
               :label="item.roleName"
               :value="item.id"
@@ -105,15 +106,14 @@
 
 <script setup>
 import { getUserData, changeUserState, deleteUser, setUserRole } from '@/api/user'
+import { GetRoleList } from '@/api/role'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { options } from './options'
 import { Edit, Search, Delete, Setting } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import Dialog from './components/dialog.vue'
-import { useStore } from 'vuex'
 
-const store = useStore()
 const i18n = useI18n()
 const dayjs = require('dayjs')
 const dialogFormVisible = ref(false)
@@ -122,6 +122,7 @@ const dialogFormData = ref({})
 const setRoleDialogVisible = ref(false)
 const userInfo = ref({})
 const selectedRoleId = ref('')
+const roleList = ref([])
 const queryform = ref({
   query: '',
   pagenum: 1,
@@ -160,7 +161,9 @@ const initTableData = async () => {
   tableData.value = res.users
 }
 initTableData()
-const handleRoleDialog = (row) => {
+const handleRoleDialog = async (row) => {
+  const res = await GetRoleList()
+  roleList.value = res
   setRoleDialogVisible.value = true
   userInfo.value = JSON.parse(JSON.stringify(row))
 }
@@ -204,7 +207,6 @@ const deleteUserInfo = (id) => {
       })
     })
 }
-
 const handleRoleDialogClose = () => {
   setRoleDialogVisible.value = false
 }

@@ -37,3 +37,15 @@ var checkMobile = (rule, value, callback) => {
     }
     callback(new Error('手机号格式错误'))
 }
+
+权限管理页面的bug 如何在删除权限之后更改row值而不引起折叠重加载
+
+封装分页组件 SvgIcon
+
+难点 
+数据处理 比如将一个数组转成树形结构
+多层级的树形表格 vxe-table vue3 + ts
+将返回的树形数据做扁平化处理之后，使用vxe-table
+vue-table-with-tree vue2 + js
+
+！！树形数据和数组的相互转换
