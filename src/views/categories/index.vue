@@ -32,10 +32,7 @@
       </vxe-column>
       <vxe-column title="操作">
         <template v-slot="{ row }">
-          <el-button
-            type="primary"
-            :icon="Edit"
-            @click="EditCateDialog(row)"
+          <el-button type="primary" :icon="Edit" @click="EditCateDialog(row)"
             >编辑</el-button
           >
           <el-button
@@ -115,7 +112,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { GetGoodsCateList, DeleteCate, AddCate, SearchCate, EditCate } from '@/api/goods'
+import {
+  GetGoodsCateList,
+  DeleteCate,
+  AddCate,
+  SearchCate,
+  EditCate
+} from '@/api/goods'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 

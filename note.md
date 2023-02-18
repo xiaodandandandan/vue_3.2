@@ -49,3 +49,5 @@ var checkMobile = (rule, value, callback) => {
 vue-table-with-tree vue2 + js
 
 ！！树形数据和数组的相互转换
+
+请求返回数据较慢，可以使用进度条 骨架屏等告知用户，改善用户体验
